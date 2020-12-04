@@ -5,12 +5,16 @@ from variable import Variable
 from gaussian import Gaussian
 from double_gaussian import Double_gaussian
 from crystal_ball import Crystal_ball
+from math import floor, log10
+
+def round_digits(x, n):
+    return round(x, -int(floor(log10(abs(x)))) + n)
 
 #Creates a class for variables characterized by a gaussian curve with exponential background or Crystal Ball function
 #shape
 class Gaussian_variable(Variable): #Inherits Variable Class
     #Method to initialize the class parameters to be used later for analysis
-    def __init__(self, data, limits, num_bins, title, xlabel, ylabel, file_name, fig_num):
+    def __init__(self, data, limits, num_bins, title, xlabel, ylabel, file_name, fig_num, units):
         self.data = data
         print(np.min(data))
         print(np.max(data))
@@ -42,6 +46,7 @@ class Gaussian_variable(Variable): #Inherits Variable Class
         self.single_gaussian = Gaussian() #utilizes gaussian module imported
         self.double_gaussian = Double_gaussian() #utilizes double gaussian module imported
         self.crystal_ball = Crystal_ball() #utilizes crystal ball module imported
+        self.units = units
 
     #method that finds the mean of a gaussian by finding the maximum bin in a gaussian histogram
     def find_mean(self):
@@ -140,16 +145,16 @@ class Gaussian_variable(Variable): #Inherits Variable Class
     #Double Gaussian
     #method that returns the output of a double gaussian with an exponential decay background from parameters
     # given to it
-    def gauss_two(self, x, F, a, mu_1, mu_2, st_1, st_2, Q):
-        y = (1 - F) * self.double_gaussian.double_gaussian(x, mu_1, mu_2, st_1, st_2, Q) + F * self.exponential(x, a)
+    def gauss_two(self, x, F, a, mu_1, st_1, st_2, Q):
+        y = (1 - F) * self.double_gaussian.double_gaussian(x, mu_1, st_1, st_2, Q) + F * self.exponential(x, a)
         return y
 
     #method that returns the output of the negative natural logarithm of the maximum likelihood of a double gaussian
     #with an exponential decay for background from parameters given to it
-    def NLOGL_2(self, F, a, mu_1, mu_2, st_1, st_2, Q):
+    def NLOGL_2(self, F, a, mu_1, st_1, st_2, Q):
         a = np.longdouble(a)
         Q = np.longdouble(Q)
-        L = -1*np.sum(np.log(self.gauss_two(self.data, F, a, mu_1, mu_2, st_1, st_2, Q)))
+        L = -1*np.sum(np.log(self.gauss_two(self.data, F, a, mu_1, st_1, st_2, Q)))
         return L
 
     ## Crystal Ball
@@ -184,23 +189,32 @@ class Gaussian_variable(Variable): #Inherits Variable Class
         F = self.parameters_cb[4]
         w = self.parameters_cb[5]
         exp_y = np.array([])
+        crystal_y = np.array([])
         plt.figure(fig_num)
         ax1 = plt.subplot(211)
+        #Finds y for the model to be fitted and just for the crystal ball part
         for i in range(0, len(self.bins)-1):
-            x = self.bins[i]+self.bin_width
+            x = self.bins[i]
             if (x-mu)/st > -a:
                 y = (1-F)*self.crystal_ball.crystal_ball_1(x, n, a, mu, st)+F*self.exponential(x, w)
                 exp_y = np.append(exp_y, np.array([y]))
+                c_y = (1 - F) * self.crystal_ball.crystal_ball_1(x, n, a, mu, st)
+                crystal_y = np.append(crystal_y, np.array([c_y]))
             elif (x-mu)/st <= -a:
                 y = (1-F)*self.crystal_ball.crystal_ball_2(x, n, a, mu, st)+F*self.exponential(x, w)
                 exp_y = np.append(exp_y, np.array([y]))
+                c_y = (1-F)*self.crystal_ball.crystal_ball_2(x, n, a, mu, st)
+                crystal_y = np.append(crystal_y, np.array([c_y]))
         self.expy_cb = exp_y
+        expo_y = F*self.exponential(self.bins[0:self.num_bins], w) #finds y for background exponential decay
         plt.xlabel(self.xlabel)
-        plt.ylabel(self.ylabel)
+        plt.ylabel("Probability Density per " + str(round_digits(self.bin_width, 2))+ " "+ self.units)
         plt.title("Probability Density Function with Crystal Ball Function Fit:\n " + self.title)
         u, bins, patches = plt.hist(self.data, self.num_bins, self.limits, density=True, stacked=True) #Note that
         # density and stacked being true ensures histogram is normalized and thus a PDF (Probability Denisty Function)
-        ax1.plot(self.bins[0:self.num_bins]+self.bin_width, self.expy_cb, label="Crystal Ball Fit")
+        ax1.plot(self.bins[0:self.num_bins], self.expy_cb, label="Full Crystal Ball Model Fit")
+        ax1.plot(self.bins[0:self.num_bins], crystal_y, label="Crystal Ball Function Part")
+        ax1.plot(self.bins[0:self.num_bins], expo_y, label="Background Exponential Decay Fit")
         ax1.legend()
         return self.expy_cb
 
@@ -213,13 +227,17 @@ class Gaussian_variable(Variable): #Inherits Variable Class
         st = self.parameters_g[3]
         plt.figure(fig_num)
         ax1 = plt.subplot(211)
-        exp_y = self.gauss(self.bins[0:self.num_bins]+self.bin_width, F, a, mu, st)
+        exp_y = self.gauss(self.bins[0:self.num_bins], F, a, mu, st) #finds y for full model
+        gauss_y = (1-F)*self.single_gaussian.single_gaussian(self.bins[0:self.num_bins], mu, st) #finds y for just gaussian part
+        expo_y = F*self.exponential(self.bins[0:self.num_bins], a) #finds y for exponential background decay
         self.expy_single = exp_y
         plt.xlabel(self.xlabel)
-        plt.ylabel(self.ylabel)
+        plt.ylabel("Probability Density per " + str(round_digits(self.bin_width, 2))+ " "+ self.units)
         plt.title("Probability Density Function with Single Gaussian Fit:\n " + self.title)
         self.prob, bins, patches = plt.hist(self.data, self.num_bins, self.limits, density=True, stacked=True)
-        ax1.plot(self.bins[0:self.num_bins]+self.bin_width, self.expy_single, label="Single Gaussian Fit")
+        ax1.plot(self.bins[0:self.num_bins], self.expy_single, label="Full Single Gaussian Model Fit")
+        ax1.plot(self.bins[0:self.num_bins], gauss_y, label="Single Gaussian Part")
+        ax1.plot(self.bins[0:self.num_bins], expo_y, label="Exponential Background Decay")
         ax1.legend()
         return self.expy_single
 
@@ -229,19 +247,24 @@ class Gaussian_variable(Variable): #Inherits Variable Class
         F = self.parameters_2g[0]
         a = self.parameters_2g[1]
         mu_1 = self.parameters_2g[2]
-        mu_2 = self.parameters_2g[3]
-        st_1 = self.parameters_2g[4]
-        st_2 = self.parameters_2g[5]
-        Q = self.parameters_2g[6]
+        st_1 = self.parameters_2g[3]
+        st_2 = self.parameters_2g[4]
+        Q = self.parameters_2g[5]
         plt.figure(fig_num)
         ax1 = plt.subplot(211)
         print(self.bin_width)
-        self.expy_double = self.gauss_two(self.bins[0:self.num_bins]+self.bin_width, F, a, mu_1, mu_2, st_1, st_2, Q)
+        self.expy_double = self.gauss_two(self.bins[0:self.num_bins], F, a, mu_1, st_1, st_2, Q) #finds y for full double gaussian model
+        gauss1_y = (1-F)*Q*self.single_gaussian.single_gaussian(self.bins[0:self.num_bins], mu_1, st_1) #finds y for narrow gaussian
+        gauss2_y = (1-F)*(1-Q)*self.single_gaussian.single_gaussian(self.bins[0:self.num_bins], mu_1, st_2) #finds y for wide gaussian
+        expo_y = F*self.exponential(self.bins[0:self.num_bins], a) #finds y for exponential background decay
         plt.xlabel(self.xlabel)
-        plt.ylabel(self.ylabel)
+        plt.ylabel("Probability Density per " + str(round_digits(self.bin_width, 2))+ " "+ self.units)
         plt.title("Probability Density Function with Double Gaussian Fit\n: "+self.title)
         n, bins, patches = plt.hist(self.data, self.num_bins, self.limits, density=True, stacked=True)
-        ax1.plot(self.bins[0:self.num_bins]+self.bin_width, self.expy_double, label="Double Gaussian Fit")
+        ax1.plot(self.bins[0:self.num_bins], self.expy_double, label="Full Double Gaussian Model Fit")
+        ax1.plot(self.bins[0:self.num_bins], gauss1_y, label="Narrow Gaussian Fit")
+        ax1.plot(self.bins[0:self.num_bins], gauss2_y, label="Wide Gaussian Fit")
+        ax1.plot(self.bins[0:self.num_bins], expo_y, label="Exponential Background Decay")
         ax1.legend()
         return self.expy_double
 
@@ -252,5 +275,5 @@ class Gaussian_variable(Variable): #Inherits Variable Class
         plt.xlabel(self.xlabel)
         plt.ylabel(str("Residuals of " + self.ylabel))
         plt.title(str("Plot of the Residuals versus "+self.xlabel))
-        ax2.scatter(self.bins[0:self.num_bins]+self.bin_width, residuals)
+        ax2.scatter(self.bins[0:self.num_bins], residuals)
         plt.tight_layout()

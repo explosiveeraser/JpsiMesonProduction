@@ -7,14 +7,14 @@ class Jpsi():
     # Method to initialize the class parameters to be used later for analysis
     def __init__(self, x, nevent, fig_nums=(1,2,3,4,5,6,7)):
         self.nevent = nevent
-        self.xmass = Gaussian_variable(self.create_variable(x, 0), (0,0), 250, "Candidates versus Invariant Mass", "Invariant Mass (MeV/c^2)", "Candidates", "invariant_mass_hist.png", fig_nums[0]) #invariant mass
-        self.tmomentum = Variable(self.create_variable(x, 1), (0.0, 8000.0), 100, "Candidates versus Transverse Momentum", "Transverse Momentum (MeV/c)", "Candidates", "transverse_momentum_hist.png", fig_nums[1]) #transverse momentum
-        self.rapidity = Variable(self.create_variable(x, 2), (1.8, 7.0), 100, "Candidates versus Rapidity", "Rapidity", "Candidates", "rapidity_hist.png", fig_nums[2]) #rapidity
-        self.chiSqr = Variable(self.create_variable(x, 3), (0, 1.5), 100, "Candidates versus Geometric Vertex \nof Dimuon Candidate", "Geometric Vertex of Dimuon Candidate", "Candidates", "geomtric_vertex_hist.png", fig_nums[3]) #geometric vertex of dimuon candidate
-        self.minTMomentum = Variable(self.create_variable(x, 4), (0.0, 2600.0), 100, "Candidates versus Minimum Transverse Momentum", "Minimum Transverse Momentum (MeV/c)", "Candidates", "minimum_transverse_momentum_hist.png", fig_nums[4]) #Minimum transverse momentum
+        self.xmass = Gaussian_variable(self.create_variable(x, 0), (0,0), 250, "Candidates versus Invariant Mass", "Invariant Mass (MeV/c^2)", "Candidates", "invariant_mass_hist.png", fig_nums[0], "MeV/c^2") #invariant mass
+        self.tmomentum = Variable(self.create_variable(x, 1), (0.0, 8000.0), 100, "Candidates versus Transverse Momentum", "Transverse Momentum (MeV/c)", "Candidates", "transverse_momentum_hist.png", fig_nums[1], "MeV/c") #transverse momentum
+        self.rapidity = Variable(self.create_variable(x, 2), (1.8, 7.0), 100, "Candidates versus Rapidity", "Rapidity", "Candidates", "rapidity_hist.png", fig_nums[2], "rapidity") #rapidity
+        self.chiSqr = Variable(self.create_variable(x, 3), (0, 1.5), 100, "Candidates versus Geometric Vertex \nof Dimuon Candidate", "Geometric Vertex of Dimuon Candidate", "Candidates", "geomtric_vertex_hist.png", fig_nums[3], "geometric vertex") #geometric vertex of dimuon candidate
+        self.minTMomentum = Variable(self.create_variable(x, 4), (0.0, 2600.0), 100, "Candidates versus Minimum Transverse Momentum", "Minimum Transverse Momentum (MeV/c)", "Candidates", "minimum_transverse_momentum_hist.png", fig_nums[4], "MeV/c") #Minimum transverse momentum
         x_prob = "Minimum of a variable (ProbNNmu) that characterizes how well the two\n tracks forming the candidate match the hypothesis of being muons."
-        self.ProbNNum =  Variable(self.create_variable(x, 5), (0,0), 100, str("Candidates versus "+x_prob), x_prob, "Candidates", "ProbNNum_hist.png", fig_nums[5]) #ProbNNmu
-        self.impactChi = Variable(self.create_variable(x, 6), (0.0, 500.0), 100, "Candidates versus Minimum Impact Parameter of two Muons", "Minimum Impact Parameter", "Candidates", "impact_parameter_hist.png", fig_nums[6]) #Miminum Impact parameter
+        self.ProbNNum =  Variable(self.create_variable(x, 5), (0,0), 100, str("Candidates versus "+x_prob), x_prob, "Candidates", "ProbNNum_hist.png", fig_nums[5], "probability density") #ProbNNmu
+        self.impactChi = Variable(self.create_variable(x, 6), (0.0, 500.0), 100, "Candidates versus Minimum Impact Parameter of two Muons", "Minimum Impact Parameter", "Candidates", "impact_parameter_hist.png", fig_nums[6], "minimum impact parameter") #Miminum Impact parameter
         xmass_limits = (min(self.xmass.data), max(self.xmass.data))
         ProbNNum_limits = (min(self.ProbNNum.data), max(self.ProbNNum.data))
         self.xmass.limits = xmass_limits

@@ -13,11 +13,12 @@ def filter_data_with_impact_condition(x):
     return filtered_data, length
 
 
-# Function returns filtered out data with an impact parameter less than or equal to 4.0 and ProbNNmu of less than or
-# equal to 0.60 and length of filtered data
+# Function returns filtered out data with an impact parameter less than or equal to 4.0
+# and ProbNNmu of less than or equal to 0.50 and length of filtered data
 def filter_more(x):
     x1 = x[x[:, 6] > 4.]
-    filtered_data = x1[x1[:, 5] > 0.6]
+    x2 = x1[x1[:, 5] > 0.5]
+    filtered_data = x2[x2[:, 4] < 14000.]
     length = len(filtered_data)
     return filtered_data, length
 
@@ -67,15 +68,15 @@ kwargs = dict(F=0.63, a=1.e-3, mu=3096., st=14., limit_F=(0., 1.), limit_mu=(np.
 ##Double Gaussian
 #Sets the initial guesses for the parameters of the double gaussian with exponential background fit for the invariant
 #mass
-kwargs_2 = dict(F=0.7, a=1.e-3, mu_1=3096., mu_2=3096., st_1=10., st_2=40., Q=0.5, limit_F=(0., 1.), limit_Q=(0., 1.),
-                limit_mu_1=(np.min(jpsi.xmass.data), np.max(jpsi.xmass.data)), limit_mu_2=(np.min(jpsi.xmass.data),
-                                                                                           np.max(jpsi.xmass.data)))
+kwargs_2 = dict(F=0.7, a=1.e-3, mu_1=3096., st_1=10., st_2=20., Q=0.5, limit_F=(0., 1.), limit_Q=(0., 1.),
+                limit_mu_1=(np.min(jpsi.xmass.data), np.max(jpsi.xmass.data)))
 
 ##Crystal Ball
 #Sets the initial guesses for the parameters of the crystal ball with exponential background fit for the invariant
 #mass
-kwargs_cb = dict(n=1.1, a=3., mu=3097.246, st=14.147, F=0.6315, w=1.322e-3, fix_a=False, fix_mu=True, fix_st=True,
-                 fix_F=True, fix_w=True, limit_F=(0., 1.), limit_a=(0., 8.), limit_n=(-10., 10.),
+#Note for crystal ball model w characterizes the background slope.
+kwargs_cb = dict(n=1.1, a=3., mu=3097.246, st=14.147, F=0.6315, w=1.322e-3, fix_a=False, fix_mu=False, fix_st=False,
+                 fix_F=False, fix_w=True, limit_F=(0., 1.), limit_a=(0., 8.), limit_n=(-10., 10.),
                  limit_mu=(np.min(jpsi.xmass.data), np.max(jpsi.xmass.data)))
 
 #Creates a list of all the initial guesses for the various models
@@ -110,9 +111,9 @@ new_kwargs = dict(F=0.4, a=1.e-3, mu=3096., st=10., limit_F=(0., 1.), limit_mu=(
 ##Double Gaussian
 #Sets the initial guesses for the parameters of the double gaussian with exponential background fit for the invariant
 #mass
-new_kwargs_2 = dict(F=0.3, a=1.e-3, mu_1=3096., mu_2=3096., st_1=10., st_2=40., Q=0.5, limit_F=(0., 1.),
-                    limit_Q=(0., 1.), limit_mu_1=(np.min(new_jpsi.xmass.data), np.max(new_jpsi.xmass.data)),
-                    limit_mu_2=(np.min(new_jpsi.xmass.data), np.max(new_jpsi.xmass.data)))
+#Note for crystal ball model w characterizes the background slope.
+new_kwargs_2 = dict(F=0.3, a=1.e-3, mu_1=3096.,  st_1=10., st_2=40., Q=0.5, limit_F=(0., 1.),
+                    limit_Q=(0., 1.), limit_mu_1=(np.min(new_jpsi.xmass.data), np.max(new_jpsi.xmass.data)))
 
 ##Crystal Ball
 #Sets the initial guesses for the parameters of the crystal ball with exponential background fit for the invariant
@@ -132,6 +133,9 @@ new_jpsi.fit_all_models([23, 24, 25], new_jpsi_kwargs)
 #ProbNNmu > 0.6, and also returns the length of the filtered data
 data2, data2_length = filter_more(x)
 
+#prints length of filtered data
+print(data2_length)
+
 #Creates an object of class Jpsi of the newly filtered data (data2)
 jpsi2 = Jpsi(data2, data2_length, (30, 31, 32, 33, 34, 35, 36))
 
@@ -146,22 +150,22 @@ print("Number of Events in Signal Region=" + str(N2) + "|S=" + str(S2) + "|B=" +
 ##Single Gaussian
 #Sets the initial guesses for the parameters of the single gaussian with exponential background fit for the invariant
 #mass
-jpsi2_kwargs = dict(F=0.4, a=1.e-3, mu=3096., st=10., limit_F=(0., 1.), limit_mu=(np.min(new_jpsi.xmass.data),
-                                                                                  np.max(new_jpsi.xmass.data)))
+jpsi2_kwargs = dict(F=0.4, a=1.e-3, mu=3096., st=10., limit_F=(0., 1.), limit_mu=(np.min(jpsi2.xmass.data),
+                                                                                  np.max(jpsi2.xmass.data)))
 
 ##Double Gaussian
 #Sets the initial guesses for the parameters of the double gaussian with exponential background fit for the invariant
 #mass
-jpsi2_kwargs_2 = dict(F=0.3, a=1.e-3, mu_1=3096., mu_2=3096., st_1=10., st_2=40., Q=0.5, limit_F=(0., 1.),
-                      limit_Q=(0., 1.), limit_mu_1=(np.min(new_jpsi.xmass.data), np.max(new_jpsi.xmass.data)),
-                      limit_mu_2=(np.min(new_jpsi.xmass.data), np.max(new_jpsi.xmass.data)))
+#Note for crystal ball model w characterizes the background slope.
+jpsi2_kwargs_2 = dict(F=0.3, a=1.e-4, mu_1=3096., st_1=10., st_2=20., Q=0.5, limit_F=(0., 1.),
+                      limit_Q=(0., 1.), limit_mu_1=(np.min(jpsi2.xmass.data), np.max(jpsi2.xmass.data)))
 
 ##Crystal Ball
 #Sets the initial guesses for the parameters of the crystal ball with exponential background fit for the invariant
 #mass
-jpsi2_kwargs_cb = dict(n=1.1, a=3., mu=3097.246, st=14.147, F=0.6315, w=1.322e-3, fix_a=False,
+jpsi2_kwargs_cb = dict(n=2., a=5., mu=3097.246, st=14.147, F=0.3, w=1.322e-3, fix_a=False,
                        fix_mu=False, fix_st=False, fix_F=False, fix_w=False, limit_F=(0., 1.), limit_a=(0., 8.),
-                       limit_n=(-10., 10.), limit_mu=(np.min(jpsi.xmass.data), np.max(jpsi.xmass.data)))
+                       limit_n=(-10., 10.), limit_mu=(np.min(jpsi2.xmass.data), np.max(jpsi2.xmass.data)))
 
 ##Makes a list of the initial guesses for each of the models to be fitted
 jpsi2_kwargs_list = [jpsi2_kwargs, jpsi2_kwargs_2, jpsi2_kwargs_cb]
@@ -178,7 +182,7 @@ fig = plt.figure(45)
 
 #
 print(len(pt_eta))
-##
+#plots a 2d histogram of the transverse momentum versus the invariant mass
 ax1 = plt.subplot(141)
 plt.hist2d(pt_eta[0], pt_eta[1], bins=100)
 plt.xlabel("Invariant Mass (MeV/c^2)")
@@ -186,7 +190,7 @@ plt.ylabel("Transverse Momentum (MeV/c)")
 plt.title("Transverse Momentum versus Invariant Mass Histogram")
 plt.colorbar()
 
-##
+#plots a 2d histogram of the rapidity versus the invariant mass
 ax2 = plt.subplot(142)
 plt.hist2d(pt_eta[0], pt_eta[2], bins=100)
 plt.xlabel("Invariant Mass (MeV/c^2)")
@@ -194,7 +198,7 @@ plt.ylabel("Rapidity")
 plt.title("Rapidity versus Invariant Mass Histogram")
 plt.colorbar()
 
-##
+##plots a 2d histogram of the rapidity versus the transverse momentum
 ax3 = plt.subplot(143)
 n = plt.hist2d(pt_eta[1], pt_eta[2], bins=100)
 plt.xlabel("Transverse Momentum (MeV/c)")
@@ -203,9 +207,6 @@ plt.title("Rapidity versus Transverse Momentum Histogram")
 plt.colorbar()
 plt.tight_layout()
 
-##
-ax4 = plt.subplot(144)
-plt.hist(pt_eta[1], n)
 
 # plot and show plots
 plt.show()

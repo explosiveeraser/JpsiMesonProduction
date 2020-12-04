@@ -7,6 +7,7 @@ from double_gaussian import Double_gaussian
 from crystal_ball import Crystal_ball
 from math import floor, log10
 
+#Function that rounds x
 def round_digits(x, n):
     return round(x, -int(floor(log10(abs(x)))) + n)
 

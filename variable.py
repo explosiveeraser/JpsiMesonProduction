@@ -5,6 +5,7 @@ import scipy.optimize as opt
 from iminuit import Minuit
 from math import log10, floor
 
+#Function that rounds x
 def round_digits(x, n):
     return round(x, -int(floor(log10(abs(x))))+n)
 
@@ -43,16 +44,6 @@ class Variable():
         y = np.longdouble((-1 * a / (np.exp(-1 * a * np.max(self.data)) - np.exp(-1 * a * np.min(self.data)))) * np.exp(-1 * a * x))
         return y
 
-    ###
-    def find_parameters(self, func, initial_values):
-        self.prob, bins = np.histogram(self.data, self.num_bins, self.limits, density=True)
-        popt, pcov = opt.curve_fit(func, bins[0:self.num_bins], self.prob, initial_values)
-        self.parameters =popt
-        self.p_covariance = pcov
-        print(popt)
-        print(pcov)
-        return popt, pcov
-
     ##method that finds the parameters from a given function and initial values utilizing the iMinuit module for
     #minimization
     def maximum_likelihood_est(self, func, kwargs):
@@ -63,8 +54,3 @@ class Variable():
         print(lik_model.errors)
         errors = lik_model.errors
         return parameters, errors
-
-    ###
-    def maximum_likelihood_est_2(self, func, initials):
-        lik_model = opt.minimize(func, initials)
-        self.parameters = lik_model['x']

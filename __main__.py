@@ -17,8 +17,7 @@ def filter_data_with_impact_condition(x):
 # and ProbNNmu of less than or equal to 0.50 and length of filtered data
 def filter_more(x):
     x1 = x[x[:, 6] > 4.]
-    x2 = x1[x1[:, 5] > 0.5]
-    filtered_data = x2[x2[:, 4] < 14000.]
+    filtered_data = x1[x1[:, 5] > 0.5]
     length = len(filtered_data)
     return filtered_data, length
 
